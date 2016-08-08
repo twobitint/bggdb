@@ -1,0 +1,25 @@
+{
+  "name": "bggdb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twobitint/bggdb.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/twobitint/bggdb/issues"
+  },
+  "homepage": "https://github.com/twobitint/bggdb#readme",
+  "dependencies": {
+    "dotenv": "^2.0.0",
+    "request": "^2.74.0",
+    "sqlite3": "^3.1.4",
+    "xml2json": "^0.9.1"
+  }
+}
