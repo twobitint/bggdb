@@ -28,7 +28,8 @@ db.serialize(function () {
 
                 // Ignore accessories
                 if (info.type == 'boardgameaccessory' ||
-                    info.type == 'videogame') {
+                    info.type == 'videogame' ||
+                    info.type == 'rpgitem') {
                     return false;
                 }
 
