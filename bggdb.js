@@ -17,7 +17,7 @@ var sqlite3 = require('sqlite3').verbose();
 var prettyjson = require('prettyjson');
 var argv = require('minimist')(process.argv.slice(2));
 
-var dbFile = argv.file ? argv.file : process.env.BGDB_FILENAME;
+var dbFile = argv.file ? argv.file : process.env.BGDB_DATABASE;
 var db = new sqlite3.Database(dbFile);
 
 db.serialize(function () {
