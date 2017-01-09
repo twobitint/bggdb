@@ -33,7 +33,7 @@ db.serialize(function () {
             var id = toUpdate[i];
             var interval = setInterval(function () {
                 updateId(id);
-                db.run(`INSERT INTO owned (user, game_id) values (?, ?)`, [username, id]);
+                db.run(`INSERT OR IGNORE INTO owned (user, game_id) values (?, ?)`, [username, id]);
                 i++;
                 if (i == toUpdate.length) {
                     clearInterval(interval);
@@ -85,8 +85,8 @@ function updateId(id) {
         db.run(`INSERT OR REPLACE INTO games
             (id, name, type, thumbnail, image, description, year, min_players,
             max_players, playtime, min_playtime, max_playtime, users_rated,
-            rating_average, rating_bayes, stddev, rank)
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            rating_average, rating_bayes, stddev, rank, weight_count, weight_average)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 info.id,
                 name,
@@ -104,9 +104,36 @@ function updateId(id) {
                 info.statistics.ratings.average.value,
                 info.statistics.ratings.bayesaverage.value,
                 info.statistics.ratings.stddev.value,
-                rank
+                rank,
+                info.statistics.ratings.numweights.value,
+                info.statistics.ratings.averageweight.value
             ]
         );
+        db.run(`DELETE FROM games_tags WHERE game_id = ` + info.id);
+        info.link.forEach(function (link) {
+            db.run(`INSERT OR IGNORE INTO tags (bgg_id, type, name) values (?,?,?)`, [
+                link.id,
+                link.type,
+                link.value
+            ], function () {
+                if (this.changes == 0) {
+                    db.get(`SELECT id FROM tags WHERE bgg_id = ? AND type = ?`, [
+                        link.id,
+                        link.type
+                    ], function (err, row) {
+                        db.run(`INSERT INTO games_tags (game_id, tag_id) values (?,?)`, [
+                            info.id,
+                            row.id
+                        ]);
+                    });
+                } else {
+                    db.run(`INSERT INTO games_tags (game_id, tag_id) values (?,?)`, [
+                        info.id,
+                        this.lastID
+                    ]);
+                }
+            });
+        });
         if (playersArray instanceof Array) {
             playersArray.forEach(function (elem) {
                 var best = parseInt(elem.result[0].numvotes);
@@ -165,6 +192,8 @@ function initializeDB(db) {
         rating_bayes REAL,
         stddev REAL,
         rank INT,
+        weight_count INT,
+        weight_average REAL,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
     db.run(`CREATE INDEX IF NOT EXISTS rank ON games (rank)`);
@@ -184,5 +213,12 @@ function initializeDB(db) {
     db.run(`CREATE INDEX IF NOT EXISTS recommended ON players (recommended)`);
     db.run(`CREATE INDEX IF NOT EXISTS bad ON players (bad)`);
     db.run(`CREATE INDEX IF NOT EXISTS weighted ON players (weighted)`);
-    db.run(`CREATE TABLE IF NOT EXISTS owned (user TEXT, game_id INT)`);
+    db.run(`CREATE TABLE IF NOT EXISTS owned (user TEXT, game_id INT, PRIMARY KEY (user, game_id))`);
+    db.run(`CREATE TABLE IF NOT EXISTS tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, bgg_id INT
+    )`);
+    // db.run(`CREATE INDEX IF NOT EXISTS type ON tags (type)`);
+    // db.run(`CREATE INDEX IF NOT EXISTS bgg_id ON tags (bgg_id)`);
+    db.run(`CREATE UNIQUE INDEX IF NOT EXISTS bgg ON tags (type, bgg_id)`);
+    db.run(`CREATE TABLE IF NOT EXISTS games_tags (game_id INT, tag_id INT, PRIMARY KEY (game_id, tag_id))`);
 }
