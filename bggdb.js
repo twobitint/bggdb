@@ -1,20 +1,28 @@
 //select * from owned join games on owned.game_id = games.id join players on players.game_id = games.id where players.number = 2 and players.best > 0.9 order by games.rank
 
+//const commandLineArgs = require('command-line-args');
 require('dotenv').config();
 
+// const optionDefinitions = [
+//     //{ name: 'file', alias: 'f', type: String }
+//     { name: 'collection', 'alias': 'c', 'type': String }
+// ];
+
+// const options = commandLineArgs(optionDefinitions);
 var request = require('request');
 var xml2json = require('xml2json');
 var sqlite3 = require('sqlite3').verbose();
 var prettyjson = require('prettyjson');
 var argv = require('minimist')(process.argv.slice(2));
 
-var db = new sqlite3.Database(process.env.DB_FILENAME);
+var dbFile = argv.file ? argv.file : process.env.BGDB_FILENAME;
+var db = new sqlite3.Database(dbFile);
 
 db.serialize(function () {
     initializeDB(db);
 
     if (argv.collection) {
-        var username = 'whumples';
+        var username = argv.collection;
         bgg('/collection', {username: username, own: 1}, function (res) {
             var toUpdate = res.items.item.map(function (elem) {
                 return parseInt(elem.objectid);
