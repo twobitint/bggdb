@@ -175,7 +175,8 @@ function initializeDB(db) {
         best REAL NOT NULL,
         recommended REAL NOT NULL,
         bad REAL NOT NULL,
-        weighted REAL NOT NULL
+        weighted REAL NOT NULL,
+        PRIMARY KEY (game_id, number, or_more)
     )`);
     db.run(`CREATE INDEX IF NOT EXISTS game_id ON players (game_id)`);
     db.run(`CREATE INDEX IF NOT EXISTS number ON players (number)`);
