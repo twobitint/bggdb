@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 //select * from owned join games on owned.game_id = games.id join players on players.game_id = games.id where players.number = 2 and players.best > 0.9 order by games.rank
 
 //const commandLineArgs = require('command-line-args');
