@@ -45,7 +45,7 @@ db.serialize(function () {
     } else {
         db.get(`SELECT * FROM games ORDER BY updated_at DESC LIMIT 1`, function (err, row) {
             var id = 1;
-            if (row) {
+            if (row && !argv.all) {
                 id = row.id + 1;
             }
             setInterval(function () {
